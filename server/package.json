@@ -1,0 +1,13 @@
+{
+  "name": "donategold-relay",
+  "version": "1.0.0",
+  "description": "Relay webhook donasi (Saweria/Sosiabuzz/Tako) untuk leaderboard DonateGold di Roblox",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "firebase-admin": "^12.0.0"
+  }
+}
