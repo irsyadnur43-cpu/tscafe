@@ -110,9 +110,26 @@ async function finalizeDonation(donation) {
 function verifySaweriaSignature(req) {
   if (!SAWERIA_STREAM_KEY) return true;
   const sig = req.get('Saweria-Callback-Signature');
-  if (!sig) return false;
-  const expected = crypto.createHmac('sha256', SAWERIA_STREAM_KEY).update(req.rawBody).digest('hex');
-  return sig === expected;
+  if (!sig) {
+    console.log('[SAWERIA SIG] header signature tidak ada');
+    return false;
+  }
+  const b = req.body || {};
+  const candidates = {
+    fields: `${b.version}${b.id}${b.amount_raw}${b.donator_name}${b.donator_email}`,
+    rawBody: req.rawBody,
+  };
+  for (const [label, data] of Object.entries(candidates)) {
+    const expected = crypto.createHmac('sha256', SAWERIA_STREAM_KEY).update(data).digest('hex');
+    try {
+      if (crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(sig))) {
+        console.log('[SAWERIA SIG] cocok via', label);
+        return true;
+      }
+    } catch {}
+  }
+  console.log('[SAWERIA SIG] tidak cocok. sig:', sig, 'body:', JSON.stringify(b));
+  return false;
 }
 
 // Verifikasi khusus Tako: HMAC SHA-256 pada header X-Tako-Signature (sesuai dokumentasi resminya).
